@@ -7,6 +7,8 @@ extends Control
 @onready var server_closed_label = $ServerClosedLabel
 @onready var PlayerListContainer = $NinePatchRect/PlayerListContainer
 
+
+var is_changing_scene := false
 var countdown_timer: Timer
 var current_countdown := 5
 
@@ -47,14 +49,12 @@ func handle_host_disconnected():
 
 # เมื่อ Host ออกจากเกม
 func _exit_tree():
-	if multiplayer.is_server():
-		# ส่งข้อความแจ้งเตือนไปยังทุก Client ก่อนปิด
+	if is_changing_scene:
+		return 
+
+	if multiplayer.is_server() && multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED:
 		notify_server_shutdown.rpc("⚠️ เซิร์ฟเวอร์ปิดการเชื่อมต่อ")
-		# รอสักครู่ให้ข้อความส่งไปถึง Client
 		await get_tree().create_timer(0.5).timeout
-		# ปิดการเชื่อมต่อ
-		Global.players.clear()
-		print("เคลียร์ข้อมูลไคลเอนต์เรียบร้อย")
 		multiplayer.multiplayer_peer.close()
 
 func start_exit():
@@ -63,6 +63,7 @@ func start_exit():
 		notify_server_shutdown.rpc("เซิร์ฟเวอร์ปิดโดยผู้ดูแล")
 		await get_tree().create_timer(3).timeout
 	multiplayer.multiplayer_peer.close()
+	Global.players.clear()
 	get_tree().change_scene_to_file("res://Scene/main.tscn")
 
 # แสดงข้อความบน UI
@@ -71,13 +72,10 @@ func show_server_closed_message():
 	server_closed_label.text = msg
 	server_closed_label.show()
 
-func start_check():
-	print(Global.players)
-	for id in Global.players:
-		print("player", id)
 
 # เมื่อมี client ใหม่เชื่อมต่อ
 func _on_peer_connected(id: int):
+	
 	print("🟢 Player joined: ", id)
 	# ถ้าเป็น host (server) ให้ส่งชื่อผู้เล่นทั้งหมดไปให้ client ใหม่
 	if multiplayer.is_server():
@@ -128,9 +126,16 @@ func receive_player_name(id: int, name: String):
 # Host ขอชื่อจาก client ใหม่
 @rpc("authority", "call_local", "reliable")
 func request_player_name():
-	# Client ส่งชื่อของตัวเองกลับไปยัง host
-	receive_player_name.rpc_id(1, multiplayer.get_unique_id(), Global.my_name)
-
+	# กำหนด ID ที่เรียงลำดับจาก 2 เริ่มต้น
+	var sequential_id = 1
+	for peer_id in multiplayer.get_peers():
+		sequential_id += 1
+		if peer_id == multiplayer.get_unique_id():
+			break
+	
+	# Client ส่งชื่อของตัวเองกลับไปยัง host พร้อมกับ ID ที่เรียงลำดับ
+	receive_player_name.rpc_id(1, sequential_id, Global.my_name)
+	
 # Host ส่งรายชื่อผู้เล่นทั้งหมดไปให้ client ใหม่
 @rpc("authority", "call_local", "reliable")
 func update_player_list_to_client(players_list: Dictionary):
@@ -197,13 +202,18 @@ func update_player_list():
 	
 	print("อัปเดตรายชื่อผู้เล่นแล้ว:", Global.players)
 # เมื่อกดปุ่ม Start (เรียกจาก host)
-func _on_start_pressed():
-	start_countdown.rpc()  # ส่งคำสั่งไปยังทุก client
 
+func _on_start_pressed():
+	is_changing_scene = true
+	start_countdown.rpc()
+	
 @rpc("any_peer", "call_local", "reliable")
 func start_countdown():
+	if multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
+		return
+		
 	countdown_label.show()
-	current_countdown = 5
+	current_countdown = 2
 	countdown_label.text = "เกมจะเริ่มใน %d วินาที..." % current_countdown
 	countdown_timer.start(1.0)
 
@@ -216,8 +226,20 @@ func _on_countdown_timer_timeout():
 	else:
 		countdown_label.text = "เริ่มเกม!"
 		countdown_timer.start(1.0)
-		countdown_timer.timeout.connect(_change_to_game_scene, CONNECT_ONE_SHOT)
+		
+		if multiplayer.is_server():
+			# บอกทุกคนให้เปลี่ยน Scene
+			_change_to_game_scene.rpc()
+
 
 @rpc("any_peer", "call_local", "reliable")
 func _change_to_game_scene():
-	get_tree().change_scene_to_file("res://Scene/GameScene.tscn")
+	if countdown_timer:
+		countdown_timer.stop()
+
+	is_changing_scene = true
+	
+	if Global.peer:
+		multiplayer.multiplayer_peer = Global.peer
+
+	get_tree().change_scene_to_file("res://Scene/maingame.tscn")

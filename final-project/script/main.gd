@@ -1,9 +1,9 @@
 extends Control
 
-@onready var host_button = $NinePatchRect/VBoxContainer/HostButton
-@onready var join_button = $NinePatchRect/VBoxContainer/JoinButton
-@onready var name_input = $NinePatchRect/VBoxContainer/NameInput
-@onready var ip_input = $NinePatchRect/VBoxContainer/IPInput
+@onready var host_button = $NinePatchRect/NinePatchRect/HostButton
+@onready var join_button = $NinePatchRect/NinePatchRect/JoinButton
+@onready var name_input = $NinePatchRect/NinePatchRect/NameInput
+@onready var ip_input = $NinePatchRect/NinePatchRect/IPInput
 
 const PORT := 12345
 

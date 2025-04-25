@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=34 format=3 uid="uid://mbsg4xqnedxi"]
 
-[ext_resource type="Texture2D" uid="uid://d00ws7wljnit4" path="res://assets/FlatUI4/UIpack_vector.svg" id="1"]
+[ext_resource type="Texture2D" uid="uid://d00ws7wljnit4" path="res://assets/ui/UIpack_vector.svg" id="1"]
 [ext_resource type="FontFile" path="./kenvector_future.ttf" id="2"]
 
 [sub_resource type="FontFile" id="31"]

@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://ngsniwddn0ya"]
 
 [ext_resource type="Script" path="res://script/room_scene.gd" id="1_asu4e"]
-[ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://background.png" id="2_6o4ak"]
+[ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_6o4ak"]
 [ext_resource type="Texture2D" uid="uid://crixy4cv8lo11" path="res://assets/ui/GUI-3.png" id="2_aqk8g"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="2_y1iwn"]
 
@@ -21,8 +21,8 @@ offset_bottom = 639.0
 color = Color(0, 0, 0, 1)
 
 [node name="Background" type="Sprite2D" parent="."]
-position = Vector2(609, 501)
-scale = Vector2(1.27148, 1)
+position = Vector2(577.5, 516)
+scale = Vector2(1.12207, 1)
 texture = ExtResource("2_6o4ak")
 
 [node name="NinePatchRect" type="NinePatchRect" parent="."]
