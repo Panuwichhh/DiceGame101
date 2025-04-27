@@ -196,8 +196,8 @@ func _on_dice_pressed():
 	dice_animation.play(\"DiceRolling\")
 	
 	await dice_animation.animation_finished
-	var roll = randi_range(1, 6)
-	#var roll = 9
+	#var roll = randi_range(1, 6)
+	var roll = 9
 	dice_label.text = Global.my_name + \"🎲 ทอยได้ : \" + str(roll)
 	
 	dice_face.frame = roll - 1
@@ -284,12 +284,12 @@ func move_player(player_id: int,end_spot: int,current: int):
 			tween.tween_property(player_nodes[player_id], \"position\", point_position, 0.2)
 			await tween.finished  # รอให้เคลื่อนที่ถึงจุดก่อนตรวจสอบ
 		
-	#if end_spot <= 100:
-				## ตรวจสอบว่าจุดปัจจุบันมีบันไดหรืองูหรือไม่
-	check_special_tile(end_spot , player_id)
-	if multiplayer.is_server():
+	if end_spot <= 100:
+			# ตรวจสอบว่าจุดปัจจุบันมีบันไดหรืองูหรือไม่
+		check_special_tile(end_spot , player_id)
+		print(\"end\",end_spot)
 		if Global.players_point[player_id] > 99 :
-				announce_winner.rpc(player_id)
+			announce_winner.rpc(player_id)
 
 func check_special_tile(position: int, player_id: int):
 
@@ -307,12 +307,12 @@ func check_special_tile(position: int, player_id: int):
 
 	var snakes = {
 		38: 20,
-		45: 7,
-		51: 10,
-		76: 54,
-		91: 73,
-		97: 61,
-		99: 59
+		#45: 7,
+		#51: 10,
+		#76: 54,
+		#91: 73,
+		#97: 61,
+		#99: 59
 	}
 	
 	#บันได
