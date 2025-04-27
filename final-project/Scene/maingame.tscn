@@ -387,14 +387,10 @@ func handle_host_disconnected():
 	print(\"❌ เซิร์ฟเวอร์หลักออกจากเกม\")
 	show_server_closed_message()
 	await get_tree().create_timer(3.0).timeout
-	# เปลี่ยนไปหน้าเมนูหลักแทน quit()
+	notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
 	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
+
 	
-	
-	if multiplayer.is_server() && multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED:
-		#notify_server_shutdown.rpc(\"⚠️ เซิร์ฟเวอร์ปิดการเชื่อมต่อ\")
-		await get_tree().create_timer(0.5).timeout
-		multiplayer.multiplayer_peer.close()
 
 func start_exit():
 	if multiplayer.is_server():
@@ -421,27 +417,49 @@ func show_server_closed_message():
 	message_label.show()
 
 
+#func _on_exit_button_pressed() -> void:
+	#var my_id = multiplayer.get_unique_id()
+	#print(\"👋 Player ID %d กดปุ่ม Exit\" % my_id)
+	#if multiplayer.is_server():
+		## 🛑 Host ออก = ปิดห้อง
+		#Global.players.clear()
+		#notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
+		#await get_tree().create_timer(3).timeout
+		#handle_host_disconnected()
+		#multiplayer.multiplayer_peer.close()
+	#else:
+		## 🛑 Client ออก = แจ้ง Host ลบตัวเอง
+		#if multiplayer.has_multiplayer_peer():
+			#notify_client_exit.rpc_id(1, my_id)  # ส่งไปหา Host ที่ id = 1
+			#await get_tree().create_timer(0.5).timeout  # รอส่ง rpc ให้เสร็จก่อน
+		#multiplayer.multiplayer_peer.close()
+	## ✅ เปลี่ยนกลับไปหน้าเมนู
+	#Global.players.erase(my_id)  # สำรองลบชื่อใน client ด้วย
+	#get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
+	#
+
 func _on_exit_button_pressed() -> void:
 	var my_id = multiplayer.get_unique_id()
 	print(\"👋 Player ID %d กดปุ่ม Exit\" % my_id)
+	
 	if multiplayer.is_server():
-		# 🛑 Host ออก = ปิดห้อง
+		# Host ออก = ปิดห้องทั้งหมด
 		Global.players.clear()
 		notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
 		await get_tree().create_timer(3).timeout
-		handle_host_disconnected()	
+		handle_host_disconnected()
 		multiplayer.multiplayer_peer.close()
 	else:
-		# 🛑 Client ออก = แจ้ง Host ลบตัวเอง
+		# Client ออก = แจ้ง Host ลบตัวเอง
 		if multiplayer.has_multiplayer_peer():
 			notify_client_exit.rpc_id(1, my_id)  # ส่งไปหา Host ที่ id = 1
 			await get_tree().create_timer(0.5).timeout  # รอส่ง rpc ให้เสร็จก่อน
 		multiplayer.multiplayer_peer.close()
-	# ✅ เปลี่ยนกลับไปหน้าเมนู
+	
+	# เปลี่ยนกลับไปหน้าเมนู
 	Global.players.erase(my_id)  # สำรองลบชื่อใน client ด้วย
 	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
-	
-	
+
 @rpc(\"any_peer\", \"reliable\")
 func notify_client_exit(client_id: int):
 	print(\"❌ รับแจ้งว่าผู้เล่น ID %d ออกเกม\" % client_id)
