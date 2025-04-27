@@ -54,7 +54,7 @@ func initialize_game():
 		Global.player_order = Global.players.keys()
 		Global.player_order.sort()
 		Global.current_turn_index = 0
-		update_turn_display.rpc(Global.get_current_turn_id())
+		#update_turn_display.rpc(Global.get_current_turn_id())
 
 @rpc("authority", "call_local", "reliable")
 func update_turn_display(current_turn_id: int):

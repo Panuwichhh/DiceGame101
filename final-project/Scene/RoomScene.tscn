@@ -1,9 +1,18 @@
-[gd_scene load_steps=5 format=3 uid="uid://ngsniwddn0ya"]
+[gd_scene load_steps=10 format=3 uid="uid://ngsniwddn0ya"]
 
 [ext_resource type="Script" path="res://script/room_scene.gd" id="1_asu4e"]
 [ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_6o4ak"]
-[ext_resource type="Texture2D" uid="uid://crixy4cv8lo11" path="res://assets/ui/GUI-3.png" id="2_aqk8g"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="2_y1iwn"]
+[ext_resource type="Texture2D" uid="uid://cfafir2nu7csf" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_30_21.png" id="5_6puhk"]
+[ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="5_501oo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mve1x"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5m0ux"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pf027"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rcrbe"]
 
 [node name="RoomScene" type="Control"]
 layout_mode = 3
@@ -21,8 +30,8 @@ offset_bottom = 639.0
 color = Color(0, 0, 0, 1)
 
 [node name="Background" type="Sprite2D" parent="."]
-position = Vector2(577.5, 516)
-scale = Vector2(1.12207, 1)
+position = Vector2(574.25, 498)
+scale = Vector2(1.12744, 1)
 texture = ExtResource("2_6o4ak")
 
 [node name="NinePatchRect" type="NinePatchRect" parent="."]
@@ -38,7 +47,7 @@ offset_right = 260.0
 offset_bottom = 189.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_aqk8g")
+texture = ExtResource("5_501oo")
 region_rect = Rect2(0.377472, 0.168079, 30.7622, 31.8283)
 patch_margin_left = 8
 patch_margin_top = 7
@@ -85,23 +94,36 @@ grow_horizontal = 2
 theme = ExtResource("2_y1iwn")
 horizontal_alignment = 1
 
-[node name="StartButton" type="Button" parent="."]
+[node name="NinePatchRect3" type="NinePatchRect" parent="."]
+layout_mode = 0
+offset_left = 433.0
+offset_top = 543.0
+offset_right = 722.0
+offset_bottom = 583.0
+texture = ExtResource("5_6puhk")
+
+[node name="StartButton" type="Button" parent="NinePatchRect3"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -143.0
-offset_top = -105.0
-offset_right = 145.0
-offset_bottom = -68.0
+offset_left = -144.5
+offset_top = -40.0
+offset_right = 143.5
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("2_y1iwn")
-text = "Start"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBoxEmpty_mve1x")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5m0ux")
+text = "START"
 
 [node name="Exit_button" type="Button" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 20.0
 offset_top = 15.0
@@ -112,3 +134,20 @@ theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_colors/icon_normal_color = Color(0.138021, 7.52043e-09, 0.042674, 1)
 theme_override_colors/icon_hover_color = Color(0, 0, 0, 1)
 text = "Exit"
+
+[node name="NinePatchRect2" type="NinePatchRect" parent="."]
+offset_left = 17.0
+offset_top = 16.0
+offset_right = 102.0
+offset_bottom = 62.0
+texture = ExtResource("5_501oo")
+
+[node name="Exit_button" type="Button" parent="NinePatchRect2"]
+layout_mode = 0
+offset_right = 83.0
+offset_bottom = 45.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/hover = SubResource("StyleBoxEmpty_pf027")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_rcrbe")
+text = "EXIT"

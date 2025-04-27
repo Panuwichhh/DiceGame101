@@ -1,11 +1,15 @@
-[gd_scene load_steps=6 format=3 uid="uid://bt4xx3jjtx8sx"]
+[gd_scene load_steps=8 format=3 uid="uid://bt4xx3jjtx8sx"]
 
 [ext_resource type="Script" path="res://script/main.gd" id="1_csl75"]
 [ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_gbawg"]
 [ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="3_7fkdk"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="3_wpnjc"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qf3oo"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i2tgq"]
+
+[sub_resource type="Theme" id="Theme_7omgw"]
 
 [node name="Main2" type="Control"]
 layout_mode = 3
@@ -31,15 +35,17 @@ texture = ExtResource("2_gbawg")
 layout_mode = 0
 offset_left = 17.0
 offset_top = 16.0
-offset_right = 69.0
-offset_bottom = 44.0
+offset_right = 102.0
+offset_bottom = 62.0
 texture = ExtResource("3_7fkdk")
 
 [node name="Button" type="Button" parent="NinePatchRect2"]
 layout_mode = 0
-offset_right = 52.0
-offset_bottom = 28.0
+offset_right = 83.0
+offset_bottom = 45.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/hover = SubResource("StyleBoxEmpty_qf3oo")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_i2tgq")
 text = "EXIT"
 
@@ -56,6 +62,7 @@ offset_right = 304.5
 offset_bottom = 224.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_7omgw")
 texture = ExtResource("3_7fkdk")
 region_rect = Rect2(-1.675, -0.662, 1524.06, 1012.83)
 patch_margin_left = 10

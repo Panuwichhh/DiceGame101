@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://tfanylhn745b"]
-
-[ext_resource type="Texture2D" uid="uid://de0dyhoglm5kk" path="res://talala.webp" id="1_i4j8v"]
-
-[node name="Boardgame" type="Node2D"]
-
-[node name="Talala" type="Sprite2D" parent="."]
-position = Vector2(496, 300)
-texture = ExtResource("1_i4j8v")

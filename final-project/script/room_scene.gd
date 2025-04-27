@@ -1,8 +1,8 @@
 extends Control
 
 @onready var player_list_label = $NinePatchRect/PlayerListContainer/PlayerListLabel # หรือ RichTextLabel
-@onready var exit_button = $Exit_button
-@onready var start_button = $StartButton
+@onready var exit_button = $NinePatchRect2/Exit_button
+@onready var start_button = $NinePatchRect3/StartButton
 @onready var countdown_label = $CountdownLabel
 @onready var server_closed_label = $ServerClosedLabel
 @onready var PlayerListContainer = $NinePatchRect/PlayerListContainer
@@ -126,27 +126,20 @@ func receive_player_name(id: int, name: String):
 # Host ขอชื่อจาก client ใหม่
 @rpc("authority", "call_local", "reliable")
 func request_player_name():
-	# กำหนด ID ที่เรียงลำดับจาก 2 เริ่มต้น
-	var sequential_id = 1
-	for peer_id in multiplayer.get_peers():
-		sequential_id += 1
-		if peer_id == multiplayer.get_unique_id():
-			break
-	
-	# Client ส่งชื่อของตัวเองกลับไปยัง host พร้อมกับ ID ที่เรียงลำดับ
-	receive_player_name.rpc_id(1, sequential_id, Global.my_name)
-	
+	# Client ส่งชื่อของตัวเองกลับไปยัง host พร้อมกับ unique ID
+	receive_player_name.rpc_id(1, multiplayer.get_unique_id(), Global.my_name)
+
 # Host ส่งรายชื่อผู้เล่นทั้งหมดไปให้ client ใหม่
 @rpc("authority", "call_local", "reliable")
 func update_player_list_to_client(players_list: Dictionary):
 	Global.players = players_list
 	update_player_list()
-
+	
 # Host อัปเดตรายชื่อผู้เล่นให้ทุก client
 func update_player_list_to_all_clients():
 	for peer_id in multiplayer.get_peers():
 		update_player_list_to_client.rpc_id(peer_id, Global.players)
-
+	
 # อัปเดต UI รายชื่อผู้เล่น
 func update_player_list():
 	# เคลียร์รายชื่อเก่า
@@ -204,9 +197,16 @@ func update_player_list():
 # เมื่อกดปุ่ม Start (เรียกจาก host)
 
 func _on_start_pressed():
+	Global.copy_player_id()
+	print("Players initialized: ", Global.players)
 	is_changing_scene = true
 	start_countdown.rpc()
-	
+	updateGlobalPLayers.rpc(Global.players.duplicate())
+
+@rpc("any_peer", "call_local", "reliable")
+func updateGlobalPLayers(players_data: Dictionary):
+	Global.players = players_data
+
 @rpc("any_peer", "call_local", "reliable")
 func start_countdown():
 	if multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
