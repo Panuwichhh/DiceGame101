@@ -1,9 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://bt4xx3jjtx8sx"]
+[gd_scene load_steps=10 format=3 uid="uid://bt4xx3jjtx8sx"]
 
 [ext_resource type="Script" path="res://script/main.gd" id="1_csl75"]
 [ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_gbawg"]
 [ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="3_7fkdk"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="3_wpnjc"]
+[ext_resource type="Texture2D" uid="uid://yt0q14bg11i2" path="res://img/BIRDSPRITESHEET_Blue.png" id="5_1e5r0"]
+[ext_resource type="Texture2D" uid="uid://dp705mycabgui" path="res://img/FOXSPRITESHEET.png" id="6_xekcg"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qf3oo"]
 
@@ -43,7 +45,7 @@ texture = ExtResource("3_7fkdk")
 layout_mode = 0
 offset_right = 83.0
 offset_bottom = 45.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 25
 theme_override_styles/hover = SubResource("StyleBoxEmpty_qf3oo")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_i2tgq")
@@ -144,3 +146,13 @@ theme_override_colors/font_shadow_color = Color(0.435192, 0.435192, 0.435192, 0.
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 100
 text = "Lucky Dice"
+
+[node name="BirdspritesheetBlue" type="Sprite2D" parent="."]
+position = Vector2(999, 526)
+scale = Vector2(5.80303, 5.80303)
+texture = ExtResource("5_1e5r0")
+
+[node name="Foxspritesheet" type="Sprite2D" parent="."]
+position = Vector2(168, 536)
+scale = Vector2(5.62879, 5.62879)
+texture = ExtResource("6_xekcg")

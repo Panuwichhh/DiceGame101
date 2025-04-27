@@ -48,11 +48,7 @@
 [ext_resource type="Texture2D" uid="uid://clra26hcufwvp" path="res://img/5.png" id="46_maqq3"]
 [ext_resource type="Texture2D" uid="uid://bjk3vpdmlon" path="res://img/6.png" id="47_06mhr"]
 [ext_resource type="Texture2D" uid="uid://3r2q7birpc4s" path="res://img/ไม่มีชื่อ (75 x 66 px) (640 x 640 px).png" id="47_ngqhu"]
-[ext_resource type="Texture2D" uid="uid://bjq2y3gia7g48" path="res://players/player1.png" id="49_3d3au"]
 [ext_resource type="Texture2D" uid="uid://bsdi8f1fc1fgi" path="res://img/Screenshot 2568-04-06 at 00.03.30.png" id="49_go3q2"]
-[ext_resource type="Texture2D" uid="uid://xps5xrfl1b2w" path="res://players/player2.png" id="50_o67c0"]
-[ext_resource type="Texture2D" uid="uid://bkuv07yq5s46n" path="res://players/player3.png" id="51_sg7rs"]
-[ext_resource type="Texture2D" uid="uid://xyfbipkw1qlu" path="res://players/player4.png" id="52_buca6"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="54_ctwjd"]
 [ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="55_8bbyh"]
 [ext_resource type="FontFile" uid="uid://cmvjoluu8dji7" path="res://assets/minecraft_font.ttf" id="55_yjboo"]
@@ -61,7 +57,6 @@
 resource_name = "new01"
 script/source = "extends Node2D
 
-@onready var turn_label = $TurnLabel
 @onready var dice_button = $Dice_Button
 @onready var dice_animation = $DiceAnimation
 @onready var dice_face = $DiceFace
@@ -74,7 +69,6 @@ script/source = "extends Node2D
 @onready var exit_button = $NinePatchRect2/Exit_button
 
 var player_nodes = {}
-# Player paths
 
 func _ready():
 	if not multiplayer.has_multiplayer_peer():
@@ -82,7 +76,7 @@ func _ready():
 		return 
 	
 	var my_name = Global.my_name
-	
+	dice_button.hide()
 	if multiplayer.is_server():
 		is_host_label.text = \"🖥️Host \" + my_name
 		for player_id in Global.players.keys():
@@ -127,10 +121,10 @@ func setup_player_node(player_id: int):
 	var player_sprite = Sprite2D.new()
 	player_sprite.name = \"Character\"
 	player_sprite.texture = load(get_character_texture(player_id))
-	player_sprite.scale = Vector2(0.4, 0.4)
+	player_sprite.scale = Vector2(0.28, 0.28)
 	new_path_follow.add_child(player_sprite)
 	
-	# เก็บ Reference
+	
 	player_nodes[player_id] = new_path_follow
 	
 	# ตั้งค่าตำแหน่งเริ่มต้น
@@ -138,14 +132,13 @@ func setup_player_node(player_id: int):
 	print(\"สร้าง PathFollow2D สำหรับผู้เล่น ID:\", player_id)
 
 func get_character_texture(player_id: int) -> String:
-	# ตัวละครตาม ID
 	var skin = {
-		1: \"res://players/fay01.png\",
-		2: \"res://players/fay02.png\",
-		#3: \"res://players/Player1.png\",
-		#4: \"res://players/PLayer2.png\"
+		1: \"res://players/fay02.png\",
+		2: \"res://players/PlayerTae.png\",
+		3: \"res://players/PlayerPangpon.png\",
+		4: \"res://players/PlayerNon.png\"
 	}
-	return skin.get(abs(player_id) % 4 + 1, skin[1])  # สลับสีหาก ID เกิน
+	return skin.get(abs(player_id) % 4 + 1, skin[1]) 
 
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func initialize_game():
@@ -164,23 +157,8 @@ func show_dice_button(show: bool):
 	dice_button.disabled = !show
 	dice_button.visible = show
 
-@rpc(\"call_remote\", \"reliable\")
-func update_turn_display(player_id: int, player_name: String):
-	# อัปเดตข้อความให้ทุกคน
-	turn_label.text = \"🎯 ตาของ: \" + player_name
-	turn_label.show()
-	
-	# เอฟเฟกต์แสดงผล
-	var tween = create_tween()
-	tween.tween_property(turn_label, \"modulate:a\", 1.0, 0.5).from(0.0)
-	
-	# เช็กว่าเป็นเทิร์นของเราหรือไม่
-	if Global.my_id == player_id and Global.player_turn.get(player_id, 0) == 1:
-		print(\"It's your turn!\") # หรือทำอย่างอื่น เช่น ปลดล็อกปุ่มโยนเต๋า
-	else:
-		print(\"Waiting for your turn...\")
-
 func _on_dice_pressed():
+	dice_button.hide()
 	dice_face.hide()
 	dice_animation.show()
 	dice_animation.play(\"DiceRolling\")
@@ -214,14 +192,14 @@ func process_roll_result(player_id: int, roll: int):
 	print(\"📨 รับค่าทอยจากผู้เล่น ID:\", player_id, \" ได้แต้ม:\", roll)
 	var player_name = Global.players[player_id]
 	show_dice_result.rpc(player_name,roll)
-	print(\"ล่าสุด\",Global.players_point)
+	#print(\"before: \",Global.players_point)
 	var current = Global.players_point[player_id]
 	Global.players_point[player_id] += roll
 	var end_spot = Global.players_point[player_id]
-	move_player.rpc(player_id, end_spot,current)  # สั่งให้ทุกเครื่องเคลื่อนที่
-	print(\"update\",Global.players_point)
+	#print(Global.players[player_id] , \" กำลังเดินไปยังจุดที่ \", end_spot)
+	move_player.rpc(player_id, end_spot,current) 
+	#print(\"update: \",Global.players_point)
 	update_player_point_turn.rpc(player_id, end_spot)
-	
 	next_turn()
 	
 
@@ -243,6 +221,7 @@ func next_turn():
 	for id in player_ids:
 		if Global.players_turn[id] == 1:
 			current_id = id
+			dice_button.show()
 			break
 	
 	# ตั้งค่าปัจจุบันเป็น 0
@@ -257,7 +236,7 @@ func next_turn():
 	
 	# ตั้งค่าตาถัดไปเป็น 1
 	Global.players_turn[next_id] = 1
-	print(Global.players_turn[next_id])
+	#print( Global.players[next_id] , \" คือผู้เล่นคนต่อไป id: \" , Global.players_turn[next_id])
 	
 	# แจ้งเตือนทุก client
 	notify_current_player.rpc()
@@ -265,27 +244,25 @@ func next_turn():
 
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func move_player(player_id: int,end_spot: int,current: int):
-	print(\"move_player\")
-
+	
 	for i in range(current +1 , end_spot + 1):
 		var point_position = path_walk.curve.get_point_position(i)
-		var tween := create_tween()
-		tween.tween_property(player_nodes[player_id], \"position\", point_position, 0.2)
-		print(\"กำลังเดินไปยังจุดที่ \", i)
-		await tween.finished  # รอให้เคลื่อนที่ถึงจุดก่อนตรวจสอบ
+		if i <= 100:
+			var tween := create_tween()
+			tween.tween_property(player_nodes[player_id], \"position\", point_position, 0.2)
+			await tween.finished  # รอให้เคลื่อนที่ถึงจุดก่อนตรวจสอบ
 		
 		# ตรวจสอบว่าจุดปัจจุบันมีบันไดหรืองูหรือไม่
 	check_special_tile(end_spot , player_id)
-	print(\"กำลังเดินไปยังจุดที่ \", end_spot)
 	if multiplayer.is_server():
 		if Global.players_point[player_id] > 99 :
 			announce_winner.rpc(player_id)
 
 func check_special_tile(position: int, player_id: int):
-	# ตรวจสอบและจัดการกับไทล์พิเศษ (บันได/งู)
+
 	var new_position = position
-	print(\"กำลังเดินไปยังจุดที่ \", position-1)
-	# ตัวอย่างข้อมูลบันได (ตำแหน่งเริ่ม -> ปลายทาง)
+	print(Global.players[player_id] , \" กำลังเดินไปยังจุดที่ \", position)
+
 	var ladders = {
 		5: 58,
 		14: 49,
@@ -294,7 +271,7 @@ func check_special_tile(position: int, player_id: int):
 		64: 83, 
 		75: 94
 	}
-	# ตัวอย่างข้อมูลงู (ตำแหน่งเริ่ม -> ปลายทาง)
+
 	var snakes = {
 		38: 20,
 		45: 7,
@@ -305,17 +282,16 @@ func check_special_tile(position: int, player_id: int):
 		99: 59
 	}
 	
-	# ตรวจสอบบันได
+	#บันได
 	if position in ladders:
 		new_position = ladders[position]
 		show_message.rpc(Global.players[player_id] + \" พบบันได! ขึ้นไปยังช่อง \" + str(new_position))
 	
-	# ตรวจสอบงู
+	#งู
 	elif position in snakes:
 		new_position = snakes[position]
 		show_message.rpc(Global.players[player_id] + \" เจองู! ตกลงไปยังช่อง \" + str(new_position))
 	
-	# หากตำแหน่งเปลี่ยนให้เคลื่อนที่ไปยังจุดใหม่
 	if new_position != position:
 		var target_pos = path_walk.curve.get_point_position(new_position)
 		var jump_tween = create_tween()
@@ -373,21 +349,38 @@ func announce_winner(player_id: int):
 	tween.tween_property(game_over, \"modulate:a\", 0.0, 0.5)
 	tween.tween_callback(game_over.set.bind(\"text\", \"\"))
 	
-	dice_button.disabled = true
-	await get_tree().create_timer(5.0).timeout
+	dice_button.hide()
+	await get_tree().create_timer(3.0).timeout
 	return_to_lobby()
 
 func return_to_lobby():
-	get_tree().change_scene_to_file(\"res://Scene/lobby.tscn\")
+	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
 
 # แสดงข้อความเซิร์ฟเวอร์ปิด (ทำงานทั้ง Host และ Client)
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func notify_server_shutdown(message: String):
 	print(message)
 	message_label.text = message
+	
+
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0, 0, 0, 0.7)
+	style_box.corner_radius_top_left = 10
+	style_box.corner_radius_top_right = 10
+	style_box.content_margin_left = 20
+	style_box.content_margin_right = 20
+	style_box.content_margin_top = 10
+	style_box.content_margin_bottom = 10
+
+	game_over.add_theme_stylebox_override(\"normal\", style_box)
+	
+	var tween = create_tween()
+	tween.tween_property(game_over, \"modulate:a\", 1.0, 0.3)
+	tween.tween_interval(3.0)
+	tween.tween_property(game_over, \"modulate:a\", 0.0, 0.5)
+	tween.tween_callback(game_over.set.bind(\"text\", \"\"))
+	
 	message_label.show()
-
-
 
 # ฟังก์ชันจัดการเมื่อ Host ออก
 func handle_host_disconnected():
@@ -396,9 +389,10 @@ func handle_host_disconnected():
 	await get_tree().create_timer(3.0).timeout
 	# เปลี่ยนไปหน้าเมนูหลักแทน quit()
 	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
-
+	
+	
 	if multiplayer.is_server() && multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED:
-		notify_server_shutdown.rpc(\"⚠️ เซิร์ฟเวอร์ปิดการเชื่อมต่อ\")
+		#notify_server_shutdown.rpc(\"⚠️ เซิร์ฟเวอร์ปิดการเชื่อมต่อ\")
 		await get_tree().create_timer(0.5).timeout
 		multiplayer.multiplayer_peer.close()
 
@@ -407,12 +401,20 @@ func start_exit():
 		Global.players.clear()
 		notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
 		await get_tree().create_timer(3).timeout
-		handle_host_disconnected()
 	multiplayer.multiplayer_peer.close()
 	Global.players.clear()
 	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
 
-# แสดงข้อความบน UI
+@rpc(\"any_peer\")
+func request_remove_player(leaving_player_id: int):
+	if multiplayer.is_server():
+		Global.players.erase(leaving_player_id)
+		print(\"ลบ player ออกแล้ว:\", leaving_player_id)
+
+	multiplayer.multiplayer_peer.close()
+	Global.players.clear()
+	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
+
 func show_server_closed_message():
 	var msg = \"เซิร์ฟเวอร์ปิดการเชื่อมต่อ\\nกำลังกลับไปหน้าเมนูหลัก...\"
 	message_label.text = msg
@@ -553,6 +555,14 @@ _data = {
 }
 point_count = 101
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_w60tk"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_pbqq2"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_fopeb"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_ur6nl"]
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_57u7y"]
 animations = [{
 "frames": [{
@@ -595,7 +605,8 @@ offset_bottom = 702.0
 color = Color(0, 0, 0, 1)
 
 [node name="Mapp" type="Sprite2D" parent="."]
-position = Vector2(558, 326)
+position = Vector2(552.425, 324)
+scale = Vector2(0.9875, 0.9875)
 texture = ExtResource("1_yi1lr")
 
 [node name="Map" type="Sprite2D" parent="."]
@@ -607,12 +618,14 @@ texture = ExtResource("47_ngqhu")
 [node name="Dice" type="Sprite2D" parent="."]
 
 [node name="DiceAnimation" type="AnimatedSprite2D" parent="."]
+visible = false
 position = Vector2(1039, 178)
 scale = Vector2(0.306122, 0.288889)
 sprite_frames = SubResource("SpriteFrames_xlrj8")
 animation = &"DiceRolling"
 
 [node name="PathWalk" type="Path2D" parent="."]
+position = Vector2(-1, 2)
 curve = SubResource("Curve2D_figbp")
 
 [node name="PathFollow2D2" type="PathFollow2D" parent="PathWalk"]
@@ -625,50 +638,42 @@ visible = false
 position = Vector2(-2.96132, -3.0382)
 rotation = 0.0410728
 scale = Vector2(0.0950722, 0.070395)
-texture = ExtResource("49_3d3au")
+texture = SubResource("CompressedTexture2D_w60tk")
 
 [node name="Player2" type="Sprite2D" parent="PathWalk"]
 visible = false
 position = Vector2(154.38, 610.252)
 scale = Vector2(0.111281, 0.0644905)
-texture = ExtResource("50_o67c0")
+texture = SubResource("CompressedTexture2D_pbqq2")
 
 [node name="Player3" type="Sprite2D" parent="PathWalk"]
 visible = false
 position = Vector2(154.38, 610.252)
 scale = Vector2(0.117133, 0.0611234)
-texture = ExtResource("51_sg7rs")
+texture = SubResource("CompressedTexture2D_fopeb")
 
 [node name="Player4" type="Sprite2D" parent="PathWalk"]
 visible = false
 position = Vector2(154.38, 610.252)
 scale = Vector2(0.0908019, 0.0599776)
-texture = ExtResource("52_buca6")
+texture = SubResource("CompressedTexture2D_ur6nl")
 
 [node name="BG" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(561, 323)
-scale = Vector2(0.690132, 0.390832)
+position = Vector2(571.75, 323)
+scale = Vector2(0.703068, 0.390832)
 texture = ExtResource("49_go3q2")
 
-[node name="TurnLabel" type="Label" parent="."]
-visible = false
-offset_left = 976.0
-offset_top = 406.0
-offset_right = 1099.0
-offset_bottom = 486.0
-theme_override_fonts/font = ExtResource("55_yjboo")
-theme_override_font_sizes/font_size = 20
-
 [node name="DiceLabel" type="Label" parent="."]
-offset_left = 983.0
-offset_top = 348.0
-offset_right = 1091.0
-offset_bottom = 399.0
+offset_left = 938.0
+offset_top = 343.0
+offset_right = 1133.0
+offset_bottom = 407.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 1
 
 [node name="Dice_Button" type="Button" parent="."]
 offset_left = 980.0
@@ -688,10 +693,12 @@ offset_left = 182.0
 offset_top = 210.0
 offset_right = 932.0
 offset_bottom = 455.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 120
+theme_override_font_sizes/font_size = 60
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="isHost" type="Label" parent="."]
 offset_left = 15.0
@@ -714,7 +721,7 @@ texture = ExtResource("55_8bbyh")
 layout_mode = 0
 offset_right = 83.0
 offset_bottom = 45.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 25
 theme_override_styles/hover = SubResource("StyleBoxEmpty_gcfxn")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_61tmj")

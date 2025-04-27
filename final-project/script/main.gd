@@ -4,12 +4,14 @@ extends Control
 @onready var join_button = $NinePatchRect/NinePatchRect/JoinButton
 @onready var name_input = $NinePatchRect/NinePatchRect/NameInput
 @onready var ip_input = $NinePatchRect/NinePatchRect/IPInput
+@onready var exit_button = $NinePatchRect2/Button
 
 const PORT := 12345
 
 func _ready():
 	host_button.pressed.connect(start_host)
 	join_button.pressed.connect(start_join)
+	exit_button.pressed.connect(start_exit)
 
 # 🟢 HOST
 func start_host():
@@ -43,50 +45,118 @@ func _on_peer_disconnected(id: int):
 	print("🔴 Client disconnected with peer ID:", id)
 
 # 🔵 CLIENT
+#func start_join():
+	#var name = name_input.text.strip_edges()
+	#var SERVER_IP = ip_input.text.strip_edges()
+	#
+	#if name.is_empty():
+		#print("⚠️ กรุณากรอกชื่อก่อนเข้าห้อง")
+		#return
+	#if SERVER_IP.is_empty():
+		#print("⚠️ กรุณากรอกชื่อก่อนเข้าห้อง")
+		#return
+#
+	#var peer = ENetMultiplayerPeer.new()
+	#peer.create_client(SERVER_IP, PORT)
+	#multiplayer.multiplayer_peer = peer
+	#print("🔄 Joining server at %s:%s..." % [SERVER_IP, PORT])
+#
+	#multiplayer.connected_to_server.connect(_on_connected)
+	#multiplayer.connection_failed.connect(_on_connection_failed)  
+#
+	## โหลดห้อง (RoomScene)
+	#Global.my_name = name 
+	#get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
+
 func start_join():
 	var name = name_input.text.strip_edges()
-	var SERVER_IP = ip_input.text.strip_edges()
-	
+	var room_code = ip_input.text.strip_edges()
+
 	if name.is_empty():
 		print("⚠️ กรุณากรอกชื่อก่อนเข้าห้อง")
 		return
-	if SERVER_IP.is_empty():
-		print("⚠️ กรุณากรอกชื่อก่อนเข้าห้อง")
+	if room_code.is_empty():
+		print("⚠️ กรุณากรอกรหัสห้องก่อนเข้าห้อง")
 		return
 
+	# สมมุติ ตอนนี้ Room Code ยังใช้ IP ตรงๆอยู่
+	var SERVER_IP = room_code
+
 	var peer = ENetMultiplayerPeer.new()
-	peer.create_client(SERVER_IP, PORT)
+	var err = peer.create_client(SERVER_IP, PORT)
+	
+	if err != OK:
+		print("❌ ไม่สามารถเริ่มการเชื่อมต่อได้")
+		handle_connection_failed()
+		return
+
 	multiplayer.multiplayer_peer = peer
 	print("🔄 Joining server at %s:%s..." % [SERVER_IP, PORT])
 
+	# รอ event การเชื่อมต่อ
 	multiplayer.connected_to_server.connect(_on_connected)
-	multiplayer.connection_failed.connect(_on_connection_failed)  
+	multiplayer.connection_failed.connect(_on_connection_failed)
 
-	# โหลดห้อง (RoomScene)
 	Global.my_name = name 
-	get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
+	
+func start_exit():
+	get_tree().quit()
+#
+#func _on_connected():
+	#print("✅ Connected to server!")
+	#
+	## ตั้งชื่อก่อนส่งไปหา Host
+	#var id = multiplayer.get_unique_id()
+	#var player_name = name_input.text.strip_edges()
+	#
+	#Global.my_name = player_name
+	#
+	## 1. ส่งชื่อไปหา Host ก่อน
+	#send_name_to_host.rpc_id(1, player_name)
+	#
+	## 2. รอ 1 เฟรมเพื่อให้แน่ใจว่าส่งข้อมูลเสร็จ
+	#await get_tree().process_frame
+	#
+	## 3. ค่อยเปลี่ยน Scene
+	#get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
+
+#func _on_connected():
+	#print("✅ Connected to server!")
+#
+	## ตั้งชื่อ player
+	#var id = multiplayer.get_unique_id()
+	#var player_name = name_input.text.strip_edges()
+	#Global.my_name = player_name
+#
+	## ส่งชื่อไปให้ Host
+	#send_name_to_host.rpc_id(1, player_name)
+#
+	## รอ 1 frame ค่อยเปลี่ยนฉาก
+	#await get_tree().process_frame
+	#get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
 
 func _on_connected():
 	print("✅ Connected to server!")
-	
-	# ตั้งชื่อก่อนส่งไปหา Host
+
+	# ตั้งชื่อ player
 	var id = multiplayer.get_unique_id()
 	var player_name = name_input.text.strip_edges()
-	
 	Global.my_name = player_name
-	
-	# 1. ส่งชื่อไปหา Host ก่อน
+
+	# ส่งชื่อไปให้ Host
 	send_name_to_host.rpc_id(1, player_name)
-	
-	# 2. รอ 1 เฟรมเพื่อให้แน่ใจว่าส่งข้อมูลเสร็จ
+
+	# รอ 1 frame ค่อยเปลี่ยนฉาก
 	await get_tree().process_frame
-	
-	# 3. ค่อยเปลี่ยน Scene
 	get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
-	
-	
+
 func _on_connection_failed():
-	print("❌ Failed to connect to server.")
+	print("❌ Connection Failed - กลับหน้า Menu")
+	handle_connection_failed()
+
+func handle_connection_failed():
+	await get_tree().create_timer(1.5).timeout
+	get_tree().change_scene_to_file("res://menu.tscn")
 
 # 📨 RPC ส่งชื่อไปยัง Host
 @rpc("any_peer", "call_local", "reliable")

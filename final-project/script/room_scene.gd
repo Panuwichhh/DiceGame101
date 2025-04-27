@@ -3,6 +3,7 @@ extends Control
 @onready var player_list_label = $NinePatchRect/PlayerListContainer/PlayerListLabel # หรือ RichTextLabel
 @onready var exit_button = $NinePatchRect2/Exit_button
 @onready var start_button = $NinePatchRect3/StartButton
+@onready var Start_box = $NinePatchRect3
 @onready var countdown_label = $CountdownLabel
 @onready var server_closed_label = $ServerClosedLabel
 @onready var PlayerListContainer = $NinePatchRect/PlayerListContainer
@@ -19,7 +20,7 @@ func _ready():
 	countdown_label.hide()
 	server_closed_label.hide()
 	
-	start_button.visible = multiplayer.is_server()
+	Start_box.visible = multiplayer.is_server()
 	start_button.pressed.connect(_on_start_pressed)
 	exit_button.pressed.connect(start_exit)
 	
@@ -213,7 +214,7 @@ func start_countdown():
 		return
 		
 	countdown_label.show()
-	current_countdown = 2
+	current_countdown = 3
 	countdown_label.text = "เกมจะเริ่มใน %d วินาที..." % current_countdown
 	countdown_timer.start(1.0)
 
@@ -241,5 +242,4 @@ func _change_to_game_scene():
 	
 	if Global.peer:
 		multiplayer.multiplayer_peer = Global.peer
-
 	get_tree().change_scene_to_file("res://Scene/maingame.tscn")
