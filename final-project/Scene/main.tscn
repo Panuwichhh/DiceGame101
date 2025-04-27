@@ -1,12 +1,18 @@
-[gd_scene load_steps=11 format=3 uid="uid://bt4xx3jjtx8sx"]
+[gd_scene load_steps=17 format=3 uid="uid://bt4xx3jjtx8sx"]
 
 [ext_resource type="Script" path="res://script/main.gd" id="1_csl75"]
 [ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_gbawg"]
 [ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="3_7fkdk"]
+[ext_resource type="Texture2D" uid="uid://bgft000hhyswp" path="res://players/fay01.png" id="3_312x7"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="3_wpnjc"]
+[ext_resource type="Texture2D" uid="uid://4e88otggj8vp" path="res://players/fay02.png" id="4_jvxv6"]
 [ext_resource type="Texture2D" uid="uid://yt0q14bg11i2" path="res://img/BIRDSPRITESHEET_Blue.png" id="5_1e5r0"]
+[ext_resource type="Texture2D" uid="uid://pfpgjswewjip" path="res://players/PlayerTae.png" id="5_ppwxu"]
 [ext_resource type="Texture2D" uid="uid://dp705mycabgui" path="res://img/FOXSPRITESHEET.png" id="6_xekcg"]
+[ext_resource type="Texture2D" uid="uid://dtbw08a2mxecy" path="res://players/PlayerPangpon01.png" id="7_dutxq"]
+[ext_resource type="Texture2D" uid="uid://belpc0niuihit" path="res://players/PlayerNon.png" id="7_jr024"]
 [ext_resource type="AudioStream" uid="uid://brdudbni5v4q7" path="res://assets/Sound/Sketchbook 2024-12-15.ogg" id="7_yxnng"]
+[ext_resource type="Texture2D" uid="uid://b76hio4ag1s8d" path="res://players/PlayerNack.png" id="13_maobs"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qf3oo"]
 
@@ -34,6 +40,33 @@ position = Vector2(581, 368)
 scale = Vector2(1.13477, 1)
 texture = ExtResource("2_gbawg")
 
+[node name="Fay01" type="Sprite2D" parent="."]
+position = Vector2(108, 626)
+scale = Vector2(1.20336, 1.23493)
+texture = ExtResource("3_312x7")
+
+[node name="Fay02" type="Sprite2D" parent="."]
+position = Vector2(701, 622)
+scale = Vector2(0.605159, 0.620057)
+texture = ExtResource("4_jvxv6")
+
+[node name="PlayerTae" type="Sprite2D" parent="."]
+position = Vector2(932, 279)
+rotation = 0.263761
+scale = Vector2(0.847917, 0.847917)
+texture = ExtResource("5_ppwxu")
+
+[node name="PlayerNon" type="Sprite2D" parent="."]
+position = Vector2(199, 281)
+rotation = -0.310553
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("7_jr024")
+
+[node name="PlayerPangpon01" type="Sprite2D" parent="."]
+position = Vector2(477, 573)
+scale = Vector2(1.0901, 1.0901)
+texture = ExtResource("7_dutxq")
+
 [node name="NinePatchRect2" type="NinePatchRect" parent="."]
 layout_mode = 0
 offset_left = 17.0
@@ -59,10 +92,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -304.5
+offset_left = -304.0
 offset_top = -141.0
-offset_right = 304.5
-offset_bottom = 224.0
+offset_right = 254.0
+offset_bottom = 186.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("Theme_7omgw")
@@ -77,9 +110,9 @@ axis_stretch_vertical = 1
 
 [node name="NinePatchRect" type="NinePatchRect" parent="NinePatchRect"]
 layout_mode = 2
-offset_left = 167.5
-offset_top = 326.0
-offset_right = 427.5
+offset_left = 141.0
+offset_top = 307.0
+offset_right = 428.0
 offset_bottom = 326.0
 
 [node name="NameInput" type="LineEdit" parent="NinePatchRect/NinePatchRect"]
@@ -143,17 +176,19 @@ offset_right = 323.0
 offset_bottom = 190.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_shadow_color = Color(0.435192, 0.435192, 0.435192, 0.564706)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.564706)
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 100
 text = "Lucky Dice"
 
 [node name="BirdspritesheetBlue" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(999, 526)
 scale = Vector2(5.80303, 5.80303)
 texture = ExtResource("5_1e5r0")
 
 [node name="Foxspritesheet" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(168, 536)
 scale = Vector2(5.62879, 5.62879)
 texture = ExtResource("6_xekcg")
@@ -163,3 +198,8 @@ stream = ExtResource("7_yxnng")
 volume_db = -20.0
 autoplay = true
 parameters/looping = true
+
+[node name="PlayerNack" type="Sprite2D" parent="."]
+position = Vector2(1051, 545)
+scale = Vector2(0.730208, 0.730208)
+texture = ExtResource("13_maobs")

@@ -493,7 +493,7 @@ func notify_client_exit(client_id: int):
 	# ➡️ ใหม่!! บอก Client เครื่องอื่นให้ลบด้วย
 	remove_player_node.rpc(client_id)
 
-#ลบข้อมูล Player
+	#ลบข้อมูล Player
 	Global.remove_player(client_id)
 
 #ลบข้อมูล Turn
@@ -501,6 +501,7 @@ func notify_client_exit(client_id: int):
 	
 	if multiplayer.is_server():
 		if player_nodes.size() == 1:
+			await get_tree().create_timer(3.0).timeout
 			announce_winner(1)
 
 	# ถ้าไม่มีใครถือ turn แล้ว
@@ -522,7 +523,7 @@ func notify_client_exit(client_id: int):
 
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func remove_player_node(client_id: int):
-	client_exit(Global.players[client_id])
+	client_exit(client_id)
 	if player_nodes.has(client_id):
 		player_nodes[client_id].queue_free()
 		player_nodes.erase(client_id)
