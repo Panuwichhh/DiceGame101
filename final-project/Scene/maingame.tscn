@@ -419,6 +419,61 @@ func show_server_closed_message():
 	var msg = \"เซิร์ฟเวอร์ปิดการเชื่อมต่อ\\nกำลังกลับไปหน้าเมนูหลัก...\"
 	message_label.text = msg
 	message_label.show()
+
+
+func _on_exit_button_pressed() -> void:
+	var my_id = multiplayer.get_unique_id()
+	print(\"👋 Player ID %d กดปุ่ม Exit\" % my_id)
+	if multiplayer.is_server():
+		# 🛑 Host ออก = ปิดห้อง
+		Global.players.clear()
+		notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
+		await get_tree().create_timer(3).timeout
+		handle_host_disconnected()	
+		multiplayer.multiplayer_peer.close()
+	else:
+		# 🛑 Client ออก = แจ้ง Host ลบตัวเอง
+		if multiplayer.has_multiplayer_peer():
+			notify_client_exit.rpc_id(1, my_id)  # ส่งไปหา Host ที่ id = 1
+			await get_tree().create_timer(0.5).timeout  # รอส่ง rpc ให้เสร็จก่อน
+		multiplayer.multiplayer_peer.close()
+	# ✅ เปลี่ยนกลับไปหน้าเมนู
+	Global.players.erase(my_id)  # สำรองลบชื่อใน client ด้วย
+	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
+	
+	
+@rpc(\"any_peer\", \"reliable\")
+func notify_client_exit(client_id: int):
+	print(\"❌ รับแจ้งว่าผู้เล่น ID %d ออกเกม\" % client_id)
+	
+	# ลบ Player Node
+	if player_nodes.has(client_id):
+		player_nodes[client_id].queue_free()
+		player_nodes.erase(client_id)
+	
+	# ลบข้อมูล Player
+	Global.remove_player(client_id)
+	
+	# ลบข้อมูล Turn
+	Global.players_turn.erase(client_id)
+
+	# ถ้าไม่มีใครถือ turn แล้ว
+	if not Global.players_turn.values().has(1):
+		if Global.players_turn.size() > 0:
+			# ย้าย turn ไปให้คนใหม่
+			var new_owner_id = Global.players_turn.keys()[0]
+			Global.players_turn[new_owner_id] = 1
+			print(\"🧭 ย้าย turn ไปให้ผู้เล่น ID:\", new_owner_id)
+		else:
+			# เหลือ Host คนเดียว
+			Global.players_turn.clear()
+			Global.players_turn[multiplayer.get_unique_id()] = 1
+		
+	notify_current_player.rpc()
+	
+	print(\"🎯 สถานะ players:\", Global.players)
+	print(\"🎯 สถานะ turn:\", Global.players_turn)
+	print(\"_______________________________\")
 "
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xlrj8"]
@@ -743,3 +798,4 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [connection signal="animation_finished" from="DiceAnimation" to="." method="_on_DiceAnimation_animation_finished"]
+[connection signal="pressed" from="NinePatchRect2/Exit_button" to="." method="_on_exit_button_pressed"]
