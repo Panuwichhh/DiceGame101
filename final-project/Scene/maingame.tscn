@@ -445,22 +445,24 @@ func _on_exit_button_pressed() -> void:
 @rpc(\"any_peer\", \"reliable\")
 func notify_client_exit(client_id: int):
 	print(\"❌ รับแจ้งว่าผู้เล่น ID %d ออกเกม\" % client_id)
-	
-	# ลบ Player Node
+
+#ลบ Player Node ที่ Host ตัวเอง
 	if player_nodes.has(client_id):
 		player_nodes[client_id].queue_free()
 		player_nodes.erase(client_id)
-	
-	# ลบข้อมูล Player
+
+	# ➡️ ใหม่!! บอก Client เครื่องอื่นให้ลบด้วย
+	remove_player_node.rpc(client_id)
+
+#ลบข้อมูล Player
 	Global.remove_player(client_id)
-	
-	# ลบข้อมูล Turn
+
+#ลบข้อมูล Turn
 	Global.players_turn.erase(client_id)
 
 	# ถ้าไม่มีใครถือ turn แล้ว
 	if not Global.players_turn.values().has(1):
 		if Global.players_turn.size() > 0:
-			# ย้าย turn ไปให้คนใหม่
 			var new_owner_id = Global.players_turn.keys()[0]
 			Global.players_turn[new_owner_id] = 1
 			print(\"🧭 ย้าย turn ไปให้ผู้เล่น ID:\", new_owner_id)
@@ -468,12 +470,18 @@ func notify_client_exit(client_id: int):
 			# เหลือ Host คนเดียว
 			Global.players_turn.clear()
 			Global.players_turn[multiplayer.get_unique_id()] = 1
-		
+
 	notify_current_player.rpc()
-	
+
 	print(\"🎯 สถานะ players:\", Global.players)
-	print(\"🎯 สถานะ turn:\", Global.players_turn)
-	print(\"_______________________________\")
+	print(\"🎯 สถานะ turn:\", Global.playersturn)
+	print(\"__\")
+
+@rpc(\"authority\", \"call_local\", \"reliable\")
+func remove_player_node(client_id: int):
+	if player_nodes.has(client_id):
+		player_nodes[client_id].queue_free()
+		player_nodes.erase(client_id)
 "
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xlrj8"]
