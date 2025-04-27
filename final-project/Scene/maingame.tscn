@@ -92,7 +92,7 @@ func _ready():
 		multiplayer.multiplayer_peer = Global.peer
 	
 	dice_button.pressed.connect(_on_dice_pressed)
-	exit_button.pressed.connect(start_exit)
+	exit_button.pressed.connect(_on_exit_button_pressed)
 	
 	await get_tree().create_timer(1.0).timeout
 	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
