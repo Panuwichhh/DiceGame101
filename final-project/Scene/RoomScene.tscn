@@ -136,6 +136,7 @@ theme_override_colors/icon_hover_color = Color(0, 0, 0, 1)
 text = "Exit"
 
 [node name="NinePatchRect2" type="NinePatchRect" parent="."]
+layout_mode = 0
 offset_left = 17.0
 offset_top = 16.0
 offset_right = 102.0

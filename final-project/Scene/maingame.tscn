@@ -142,8 +142,8 @@ func get_character_texture(player_id: int) -> String:
 	var skin = {
 		1: \"res://players/fay01.png\",
 		2: \"res://players/fay02.png\",
-		3: \"res://players/Player1.png\",
-		4: \"res://players/PLayer2.png\"
+		#3: \"res://players/Player1.png\",
+		#4: \"res://players/PLayer2.png\"
 	}
 	return skin.get(abs(player_id) % 4 + 1, skin[1])  # สลับสีหาก ID เกิน
 
@@ -388,6 +388,7 @@ func notify_server_shutdown(message: String):
 	message_label.show()
 
 
+
 # ฟังก์ชันจัดการเมื่อ Host ออก
 func handle_host_disconnected():
 	print(\"❌ เซิร์ฟเวอร์หลักออกจากเกม\")
@@ -406,6 +407,7 @@ func start_exit():
 		Global.players.clear()
 		notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
 		await get_tree().create_timer(3).timeout
+		handle_host_disconnected()
 	multiplayer.multiplayer_peer.close()
 	Global.players.clear()
 	get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
@@ -690,7 +692,6 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 120
-text = "GAME OVER"
 
 [node name="isHost" type="Label" parent="."]
 offset_left = 15.0
