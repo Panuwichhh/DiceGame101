@@ -7,6 +7,7 @@ extends Control
 @onready var countdown_label = $CountdownLabel
 @onready var server_closed_label = $ServerClosedLabel
 @onready var PlayerListContainer = $NinePatchRect/PlayerListContainer
+@onready var BackGroudSound = $BackGroudSound
 
 
 var is_changing_scene := false

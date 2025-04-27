@@ -1,4 +1,4 @@
-[gd_scene load_steps=63 format=3 uid="uid://j4irnrgafhqq"]
+[gd_scene load_steps=68 format=3 uid="uid://j4irnrgafhqq"]
 
 [ext_resource type="Texture2D" uid="uid://dtta16uoh8rg0" path="res://img/Mapp.png" id="1_yi1lr"]
 [ext_resource type="Texture2D" uid="uid://cli5m0hp4p00n" path="res://DiceAnimation/dice0001.png" id="2_67jyc"]
@@ -49,8 +49,13 @@
 [ext_resource type="Texture2D" uid="uid://bjk3vpdmlon" path="res://img/6.png" id="47_06mhr"]
 [ext_resource type="Texture2D" uid="uid://3r2q7birpc4s" path="res://img/ไม่มีชื่อ (75 x 66 px) (640 x 640 px).png" id="47_ngqhu"]
 [ext_resource type="Texture2D" uid="uid://bsdi8f1fc1fgi" path="res://img/Screenshot 2568-04-06 at 00.03.30.png" id="49_go3q2"]
+[ext_resource type="AudioStream" uid="uid://dgcey0pl5fjhm" path="res://assets/Sound/Dice_Sound.mp3" id="53_cwk2h"]
+[ext_resource type="AudioStream" uid="uid://cpv6awarecybu" path="res://assets/Sound/snakes.mp3" id="54_1hesv"]
+[ext_resource type="AudioStream" uid="uid://ddskdh4tpot82" path="res://assets/Sound/winner.mp3" id="54_5xp1l"]
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="54_ctwjd"]
+[ext_resource type="AudioStream" uid="uid://d4raukaw588m" path="res://assets/Sound/Sketchbook 2024-12-26.ogg" id="55_3j3i4"]
 [ext_resource type="Texture2D" uid="uid://bhufjdifs67jt" path="res://img/ChatGPT Image 21 เม.ย. 2568 19_28_31.png" id="55_8bbyh"]
+[ext_resource type="AudioStream" uid="uid://bxq4bp82p81os" path="res://assets/Sound/jaaaaa-hurraaaaa-89298.mp3" id="55_y4q1d"]
 [ext_resource type="FontFile" uid="uid://cmvjoluu8dji7" path="res://assets/minecraft_font.ttf" id="55_yjboo"]
 
 [sub_resource type="GDScript" id="GDScript_sbbv7"]
@@ -67,6 +72,10 @@ script/source = "extends Node2D
 @onready var path_follow = $PathWalk/PathFollow2D2
 @onready var message_label = $message_label
 @onready var exit_button = $NinePatchRect2/Exit_button
+@onready var Dice_sound = $DiceSound
+@onready var SnakesSound = $SnakesSound
+@onready var laddersSound = $laddersSound
+@onready var WinnerSound = $WinnerSound
 
 var player_nodes = {}
 
@@ -93,7 +102,7 @@ func _ready():
 	
 	dice_button.pressed.connect(_on_dice_pressed)
 	exit_button.pressed.connect(_on_exit_button_pressed)
-	
+
 	await get_tree().create_timer(1.0).timeout
 	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		return_to_lobby()
@@ -124,22 +133,42 @@ func setup_player_node(player_id: int):
 	player_sprite.scale = Vector2(0.28, 0.28)
 	new_path_follow.add_child(player_sprite)
 	
-	
 	player_nodes[player_id] = new_path_follow
 	
 	# ตั้งค่าตำแหน่งเริ่มต้น
 	new_path_follow.progress_ratio = 0
 	print(\"สร้าง PathFollow2D สำหรับผู้เล่น ID:\", player_id)
 
-func get_character_texture(player_id: int) -> String:
-	var skin = {
-		1: \"res://players/fay02.png\",
-		2: \"res://players/PlayerTae.png\",
-		3: \"res://players/PlayerPangpon.png\",
-		4: \"res://players/PlayerNon.png\"
-	}
-	return skin.get(abs(player_id) % 4 + 1, skin[1]) 
+var player_skins = {}
 
+func get_character_texture(player_id: int) -> String:
+	var skins = [
+		\"res://players/fay02.png\",
+		\"res://players/PlayerTae.png\",
+		\"res://players/PlayerPangpon.png\",
+		\"res://players/PlayerNon.png\"
+	]
+
+	# ถ้า player_id มีสกินอยู่แล้ว ให้คืนค่าเลย
+	if player_id in player_skins:
+		return player_skins[player_id]
+
+#หา skins ที่ยังว่าง
+	var used_skins = player_skins.values()
+	var available_skins = []
+	for skin in skins:
+		if not used_skins.has(skin):
+			available_skins.append(skin)
+
+	# ถ้าไม่มีสกินเหลือ (ทุกอันถูกใช้ไปแล้ว) ก็วนใช้ใหม่
+	if available_skins.size() == 0:
+		available_skins = skins
+
+	# เลือกอันแรกที่ว่าง (หรือจะสุ่มก็ได้)
+	var assigned_skin = available_skins[0]
+	player_skins[player_id] = assigned_skin
+
+	return assigned_skin
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func initialize_game():
 	if multiplayer.is_server():
@@ -159,6 +188,9 @@ func show_dice_button(show: bool):
 
 func _on_dice_pressed():
 	dice_button.hide()
+	
+	Dice_sound.play()
+
 	dice_face.hide()
 	dice_animation.show()
 	dice_animation.play(\"DiceRolling\")
@@ -252,11 +284,12 @@ func move_player(player_id: int,end_spot: int,current: int):
 			tween.tween_property(player_nodes[player_id], \"position\", point_position, 0.2)
 			await tween.finished  # รอให้เคลื่อนที่ถึงจุดก่อนตรวจสอบ
 		
-		# ตรวจสอบว่าจุดปัจจุบันมีบันไดหรืองูหรือไม่
-	check_special_tile(end_spot , player_id)
-	if multiplayer.is_server():
-		if Global.players_point[player_id] > 99 :
-			announce_winner.rpc(player_id)
+	if end_spot <= 100:
+			# ตรวจสอบว่าจุดปัจจุบันมีบันไดหรืองูหรือไม่
+		check_special_tile(end_spot , player_id)
+		if multiplayer.is_server():
+			if Global.players_point[player_id] > 99 :
+				announce_winner.rpc(player_id)
 
 func check_special_tile(position: int, player_id: int):
 
@@ -286,11 +319,13 @@ func check_special_tile(position: int, player_id: int):
 	if position in ladders:
 		new_position = ladders[position]
 		show_message.rpc(Global.players[player_id] + \" พบบันได! ขึ้นไปยังช่อง \" + str(new_position))
+		laddersSound.play()
 	
 	#งู
 	elif position in snakes:
 		new_position = snakes[position]
 		show_message.rpc(Global.players[player_id] + \" เจองู! ตกลงไปยังช่อง \" + str(new_position))
+		SnakesSound.play()
 	
 	if new_position != position:
 		var target_pos = path_walk.curve.get_point_position(new_position)
@@ -328,8 +363,10 @@ func show_message(msg: String):
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func announce_winner(player_id: int):
 	var winner_name = Global.players.get(player_id, \"Unknown\")
+	WinnerSound.play()
 	game_over.text = \"🏆 %s ชนะ!\" % winner_name
-	
+	dice_button.hide()
+		
 	 # สร้างและตั้งค่า StyleBox สำหรับพื้นหลัง
 	var style_box = StyleBoxFlat.new()
 	style_box.bg_color = Color(0, 0, 0, 0.7)  # สีดำความทึบ 70%
@@ -349,8 +386,15 @@ func announce_winner(player_id: int):
 	tween.tween_property(game_over, \"modulate:a\", 0.0, 0.5)
 	tween.tween_callback(game_over.set.bind(\"text\", \"\"))
 	
-	dice_button.hide()
-	await get_tree().create_timer(3.0).timeout
+	if multiplayer.is_server():
+		Global.players.clear()
+		Global.players_turn.clear()
+		Global.players_point.clear()
+		Global.my_name == \"\"
+		Global.player_order.clear()
+	
+	await get_tree().create_timer(5.0).timeout
+	multiplayer.multiplayer_peer.close()
 	return_to_lobby()
 
 func return_to_lobby():
@@ -362,7 +406,6 @@ func notify_server_shutdown(message: String):
 	print(message)
 	message_label.text = message
 	
-
 	var style_box = StyleBoxFlat.new()
 	style_box.bg_color = Color(0, 0, 0, 0.7)
 	style_box.corner_radius_top_left = 10
@@ -416,28 +459,6 @@ func show_server_closed_message():
 	message_label.text = msg
 	message_label.show()
 
-
-#func _on_exit_button_pressed() -> void:
-	#var my_id = multiplayer.get_unique_id()
-	#print(\"👋 Player ID %d กดปุ่ม Exit\" % my_id)
-	#if multiplayer.is_server():
-		## 🛑 Host ออก = ปิดห้อง
-		#Global.players.clear()
-		#notify_server_shutdown.rpc(\"เซิร์ฟเวอร์ปิดโดยผู้ดูแล\")
-		#await get_tree().create_timer(3).timeout
-		#handle_host_disconnected()
-		#multiplayer.multiplayer_peer.close()
-	#else:
-		## 🛑 Client ออก = แจ้ง Host ลบตัวเอง
-		#if multiplayer.has_multiplayer_peer():
-			#notify_client_exit.rpc_id(1, my_id)  # ส่งไปหา Host ที่ id = 1
-			#await get_tree().create_timer(0.5).timeout  # รอส่ง rpc ให้เสร็จก่อน
-		#multiplayer.multiplayer_peer.close()
-	## ✅ เปลี่ยนกลับไปหน้าเมนู
-	#Global.players.erase(my_id)  # สำรองลบชื่อใน client ด้วย
-	#get_tree().change_scene_to_file(\"res://Scene/main.tscn\")
-	#
-
 func _on_exit_button_pressed() -> void:
 	var my_id = multiplayer.get_unique_id()
 	print(\"👋 Player ID %d กดปุ่ม Exit\" % my_id)
@@ -477,6 +498,10 @@ func notify_client_exit(client_id: int):
 
 #ลบข้อมูล Turn
 	Global.players_turn.erase(client_id)
+	
+	if multiplayer.is_server():
+		if player_nodes.size() == 1:
+			announce_winner(1)
 
 	# ถ้าไม่มีใครถือ turn แล้ว
 	if not Global.players_turn.values().has(1):
@@ -497,9 +522,35 @@ func notify_client_exit(client_id: int):
 
 @rpc(\"authority\", \"call_local\", \"reliable\")
 func remove_player_node(client_id: int):
+	client_exit(Global.players[client_id])
 	if player_nodes.has(client_id):
 		player_nodes[client_id].queue_free()
 		player_nodes.erase(client_id)
+
+# แสดงข้อความเซิร์ฟเวอร์ปิด (ทำงานทั้ง Host และ Client)
+@rpc(\"authority\", \"call_local\", \"reliable\")
+func client_exit(client_id: int):
+	var message = \"👋 Player ID \" + str(Global.players.get(client_id, \"Unknown\")) + \" ออก\"
+	message_label.text = message
+	
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0, 0, 0, 0.7)
+	style_box.corner_radius_top_left = 10
+	style_box.corner_radius_top_right = 10
+	style_box.content_margin_left = 20
+	style_box.content_margin_right = 20
+	style_box.content_margin_top = 10
+	style_box.content_margin_bottom = 10
+
+	game_over.add_theme_stylebox_override(\"normal\", style_box)
+	
+	var tween = create_tween()
+	tween.tween_property(game_over, \"modulate:a\", 1.0, 0.3)
+	tween.tween_interval(3.0)
+	tween.tween_property(game_over, \"modulate:a\", 0.0, 0.5)
+	tween.tween_callback(game_over.set.bind(\"text\", \"\"))
+	
+	message_label.show()
 "
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_xlrj8"]
@@ -822,6 +873,28 @@ theme_override_font_sizes/font_size = 45
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+
+[node name="DiceSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("53_cwk2h")
+volume_db = -16.0
+
+[node name="WinnerSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("54_5xp1l")
+volume_db = -16.0
+
+[node name="BackGroundSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("55_3j3i4")
+volume_db = -33.0
+autoplay = true
+parameters/looping = true
+
+[node name="laddersSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("55_y4q1d")
+volume_db = -16.0
+
+[node name="SnakesSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("54_1hesv")
+volume_db = -16.0
 
 [connection signal="animation_finished" from="DiceAnimation" to="." method="_on_DiceAnimation_animation_finished"]
 [connection signal="pressed" from="NinePatchRect2/Exit_button" to="." method="_on_exit_button_pressed"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bt4xx3jjtx8sx"]
+[gd_scene load_steps=11 format=3 uid="uid://bt4xx3jjtx8sx"]
 
 [ext_resource type="Script" path="res://script/main.gd" id="1_csl75"]
 [ext_resource type="Texture2D" uid="uid://ctowbtaym3sbg" path="res://assets/ui/background.png" id="2_gbawg"]
@@ -6,6 +6,7 @@
 [ext_resource type="Theme" uid="uid://qt1jukm2lhon" path="res://assets/DarkTheme/Dark.theme" id="3_wpnjc"]
 [ext_resource type="Texture2D" uid="uid://yt0q14bg11i2" path="res://img/BIRDSPRITESHEET_Blue.png" id="5_1e5r0"]
 [ext_resource type="Texture2D" uid="uid://dp705mycabgui" path="res://img/FOXSPRITESHEET.png" id="6_xekcg"]
+[ext_resource type="AudioStream" uid="uid://brdudbni5v4q7" path="res://assets/Sound/Sketchbook 2024-12-15.ogg" id="7_yxnng"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qf3oo"]
 
@@ -156,3 +157,9 @@ texture = ExtResource("5_1e5r0")
 position = Vector2(168, 536)
 scale = Vector2(5.62879, 5.62879)
 texture = ExtResource("6_xekcg")
+
+[node name="BackGroudSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_yxnng")
+volume_db = -20.0
+autoplay = true
+parameters/looping = true

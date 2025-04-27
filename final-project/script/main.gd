@@ -5,6 +5,7 @@ extends Control
 @onready var name_input = $NinePatchRect/NinePatchRect/NameInput
 @onready var ip_input = $NinePatchRect/NinePatchRect/IPInput
 @onready var exit_button = $NinePatchRect2/Button
+@onready var BackGroudSound = $BackGroudSound
 
 const PORT := 12345
 
@@ -12,7 +13,9 @@ func _ready():
 	host_button.pressed.connect(start_host)
 	join_button.pressed.connect(start_join)
 	exit_button.pressed.connect(start_exit)
-
+	
+	#BackGroudSound.loop
+	#BackGroudSound.play()
 # 🟢 HOST
 func start_host():
 	var name = name_input.text.strip_edges()
@@ -68,6 +71,7 @@ func _on_peer_disconnected(id: int):
 	#Global.my_name = name 
 	#get_tree().change_scene_to_file("res://Scene/RoomScene.tscn")
 
+# 🔵 CLIENT
 func start_join():
 	var name = name_input.text.strip_edges()
 	var room_code = ip_input.text.strip_edges()
