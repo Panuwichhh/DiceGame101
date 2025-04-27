@@ -474,7 +474,7 @@ func notify_client_exit(client_id: int):
 	notify_current_player.rpc()
 
 	print(\"🎯 สถานะ players:\", Global.players)
-	print(\"🎯 สถานะ turn:\", Global.playersturn)
+	print(\"🎯 สถานะ turn:\", Global.players_turn)
 	print(\"__\")
 
 @rpc(\"authority\", \"call_local\", \"reliable\")

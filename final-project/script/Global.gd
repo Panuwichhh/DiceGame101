@@ -22,5 +22,17 @@ func copy_player_id():
 	var random_key = players_turn.keys().pick_random()
 	players_turn[random_key] = 1
 
+# ลบผู้เล่น (เมื่อ disconnect)
+func remove_player(id: int) -> void:
+	if players.has(id):
+		print("🔴 ลบผู้เล่น: [%d] %s" % [id, players[id]])
+		players.erase(id)
+	
+		
+	if player_order.has(id):
+		player_order.erase(id)
+		
+
+
 func _init():
 	print("🌍 Global initialized")
